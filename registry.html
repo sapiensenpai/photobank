@@ -29,21 +29,6 @@
             grid-column-gap: 1.55vw;
             grid-row-gap: 1.55vw;
             width: 100%;
-            margin-bottom: 2vw;
-        }
-
-        @media (max-width: 768px) {
-            .gallery-grid-wrapper {
-                grid-template-columns: repeat(2, 1fr);
-                grid-column-gap: 2vw;
-                grid-row-gap: 2vw;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .gallery-grid-wrapper {
-                grid-template-columns: 1fr;
-            }
         }
 
         .gallery-grid-item {
@@ -54,14 +39,7 @@
             border-radius: 8px;
             background: #fff;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer;
             overflow: visible;
-        }
-
-        .gallery-grid-item:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
         }
 
         .gallery-grid-item-wrapper {
@@ -80,11 +58,9 @@
             width: 100%;
             height: 100%;
             text-decoration: none;
-            pointer-events: auto;
-        }
-
-        .gallery-grid-image-link.disabled {
-            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .gallery-grid-item img {
@@ -94,61 +70,6 @@
             height: auto;
             object-fit: contain;
             display: block;
-            transition: opacity 0.3s ease;
-        }
-
-        .gallery-grid-item.purchased img {
-            opacity: 0.5;
-        }
-
-        /* Red overlay for purchased items */
-        .purchased-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(220, 38, 38, 0.85);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .gallery-grid-item.purchased:hover .purchased-overlay {
-            display: flex;
-        }
-
-        .purchased-bar {
-            width: 80%;
-            height: 4px;
-            background: #fff;
-            border-radius: 2px;
-            position: relative;
-        }
-
-        .purchased-bar::before,
-        .purchased-bar::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: #fff;
-            border-radius: 2px;
-        }
-
-        .purchased-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #fff;
-            font-weight: 600;
-            font-size: 1.1rem;
-            text-align: center;
-            white-space: nowrap;
         }
 
         .gallery-caption {
@@ -172,101 +93,16 @@
             width: 100%;
             font-weight: 500;
         }
-
-        /* Modal for confirmation */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: #fff;
-            padding: 2.5rem;
-            border-radius: 12px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            text-align: center;
-        }
-
-        .modal-content h3 {
-            margin-bottom: 1rem;
-            color: #333;
-            font-size: 1.3rem;
-        }
-
-        .modal-content p {
-            margin-bottom: 2rem;
-            color: #666;
-            line-height: 1.6;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        .modal-button {
-            padding: 0.75rem 2rem;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .modal-button.yes {
-            background: #dc2626;
-            color: #fff;
-        }
-
-        .modal-button.yes:hover {
-            background: #b91c1c;
-        }
-
-        .modal-button.no {
-            background: #e5e7eb;
-            color: #333;
-        }
-
-        .modal-button.no:hover {
-            background: #d1d5db;
-        }
     </style>
 </head>
 <body>
     <div class="registry-container">
+        <h1 style="text-align: center; margin-bottom: 2rem; color: #333;">Wedding Registry</h1>
         <div class="gallery-grid-wrapper" id="galleryGrid"></div>
     </div>
 
-    <!-- Confirmation Modal -->
-    <div class="modal" id="confirmationModal">
-        <div class="modal-content">
-            <h3>Product Already Purchased</h3>
-            <p>Product already purchased. Are you sure you want to make the product purchasable again?</p>
-            <div class="modal-buttons">
-                <button class="modal-button yes" id="confirmYes">Yes</button>
-                <button class="modal-button no" id="confirmNo">No</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // Product data - in production, load from products_data.json
+        // All 40 products
         const productsData = [
             {
                 "image": "1113501_428a8d3c-d73e-4d48-bf0f-aa0f74119fce_400x.webp",
@@ -510,67 +346,37 @@
             }
         ];
 
-        // GitHub repository base URL for images
-        // Note: GitHub raw URLs work best with %20 for spaces, not full encoding
         const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/sapiensenpai/photobank/main/';
 
-        let currentProductIndex = null;
-        const modal = document.getElementById('confirmationModal');
-        const confirmYes = document.getElementById('confirmYes');
-        const confirmNo = document.getElementById('confirmNo');
-
-        // Load products from localStorage if available
-        function loadProducts() {
-            const saved = localStorage.getItem('registryProducts');
-            if (saved) {
-                return JSON.parse(saved);
-            }
-            return productsData;
-        }
-
-        // Save products to localStorage
-        function saveProducts(products) {
-            localStorage.setItem('registryProducts', JSON.stringify(products));
-        }
-
-        // Render products
         function renderProducts() {
-            const products = loadProducts();
             const galleryGrid = document.getElementById('galleryGrid');
             galleryGrid.innerHTML = '';
 
-            products.forEach((product, index) => {
+            productsData.forEach((product, index) => {
+                console.log(`\n=== Product ${index + 1} ===`);
+                console.log('Image filename:', product.image);
+                
                 const figure = document.createElement('figure');
-                figure.className = `gallery-grid-item ${product.purchased ? 'purchased' : ''}`;
-                figure.dataset.index = index;
+                figure.className = 'gallery-grid-item';
 
                 const wrapper = document.createElement('div');
                 wrapper.className = 'gallery-grid-item-wrapper';
 
                 const link = document.createElement('a');
-                link.href = product.purchased ? '#' : product.link;
-                link.className = `gallery-grid-image-link ${product.purchased ? 'disabled' : ''}`;
+                link.href = product.link;
+                link.className = 'gallery-grid-image-link';
                 link.target = '_blank';
                 link.rel = 'noopener';
-                link.onclick = (e) => {
-                    if (product.purchased) {
-                        e.preventDefault();
-                    }
-                };
 
                 const img = document.createElement('img');
-                // GitHub raw URLs - handle spaces by replacing with %20
-                // encodeURIComponent would encode too much (like colons, dots, etc.)
                 let imageUrl = GITHUB_BASE_URL + product.image.replace(/ /g, '%20');
                 
-                console.log('Creating image for:', product.image, 'URL:', imageUrl);
+                console.log('Full URL:', imageUrl);
                 
-                // Set src first, then styles
                 img.src = imageUrl;
                 img.alt = product.caption;
-                img.loading = 'eager'; // Load immediately
+                img.loading = 'eager';
                 
-                // Style for contain (fit) instead of cover (fill)
                 img.style.display = 'block';
                 img.style.maxWidth = '100%';
                 img.style.maxHeight = '100%';
@@ -578,42 +384,24 @@
                 img.style.height = 'auto';
                 img.style.objectFit = 'contain';
                 img.style.objectPosition = 'center';
-                img.style.backgroundColor = 'transparent';
+                
+                img.onload = function() {
+                    console.log('✅ Image loaded successfully:', product.image);
+                    console.log('Image dimensions:', this.naturalWidth, 'x', this.naturalHeight);
+                };
                 
                 img.onerror = function() {
-                    console.error('❌ Failed to load image:', imageUrl);
-                    console.error('Original filename:', product.image);
-                    // Show error placeholder
+                    console.error('❌ Image failed to load:', imageUrl);
+                    console.error('Product:', product.caption);
                     this.style.backgroundColor = '#ffebee';
                     this.style.display = 'flex';
                     this.style.alignItems = 'center';
                     this.style.justifyContent = 'center';
-                    this.style.flexDirection = 'column';
-                    this.style.color = '#c62828';
-                    this.outerHTML = '<div style="width:100%;height:100%;background:#ffebee;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#c62828;font-size:0.7rem;padding:10px;text-align:center;">⚠️ Image failed to load<br><small>' + product.image + '</small></div>';
+                    this.outerHTML = '<div style="width:100%;height:100%;background:#ffebee;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#c62828;font-size:0.8rem;padding:10px;text-align:center;">❌ Image failed<br><small>' + product.image + '</small></div>';
                 };
-                
-                img.onload = function() {
-                    console.log('✓ Image loaded successfully:', product.image);
-                    this.style.backgroundColor = 'transparent';
-                };
-                
-                // Image is set to eager loading above
 
                 link.appendChild(img);
                 wrapper.appendChild(link);
-
-                // Add purchased overlay
-                if (product.purchased) {
-                    const overlay = document.createElement('div');
-                    overlay.className = 'purchased-overlay';
-                    overlay.innerHTML = `
-                        <div class="purchased-text">Purchased</div>
-                        <div class="purchased-bar"></div>
-                    `;
-                    wrapper.appendChild(overlay);
-                }
-
                 figure.appendChild(wrapper);
 
                 const caption = document.createElement('figcaption');
@@ -624,74 +412,32 @@
                 caption.appendChild(captionContent);
                 figure.appendChild(caption);
 
-                // Add click handler for all items
-                figure.onclick = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (product.purchased) {
-                        handleProductClick(index);
-                    } else {
-                        if (confirm(`Mark "${product.caption}" as purchased?`)) {
-                            togglePurchaseStatus(index);
-                        }
-                    }
-                };
-
                 galleryGrid.appendChild(figure);
             });
         }
 
-        // Handle product click
-        function handleProductClick(index) {
-            currentProductIndex = index;
-            modal.classList.add('active');
-        }
-
-        // Toggle purchase status
-        function togglePurchaseStatus(index) {
-            const products = loadProducts();
-            products[index].purchased = !products[index].purchased;
-            saveProducts(products);
-            renderProducts();
-        }
-
-        // Modal button handlers
-        confirmYes.onclick = () => {
-            if (currentProductIndex !== null) {
-                togglePurchaseStatus(currentProductIndex);
-                modal.classList.remove('active');
-                currentProductIndex = null;
-            }
-        };
-
-        confirmNo.onclick = () => {
-            modal.classList.remove('active');
-            currentProductIndex = null;
-        };
-
-        // Close modal on background click
-        modal.onclick = (e) => {
-            if (e.target === modal) {
-                modal.classList.remove('active');
-                currentProductIndex = null;
-            }
-        };
-
-        // Initialize
-        console.log('Initializing registry with', productsData.length, 'products');
-        console.log('GitHub base URL:', GITHUB_BASE_URL);
-        renderProducts();
+        console.log('=== Starting Registry ===');
+        console.log('GitHub Base URL:', GITHUB_BASE_URL);
+        console.log('Number of products:', productsData.length);
         
-        // Test first image URL
-        if (productsData.length > 0) {
-            const testUrl = GITHUB_BASE_URL + productsData[0].image.replace(/ /g, '%20');
-            console.log('Test image URL:', testUrl);
-            const testImg = new Image();
-            testImg.onload = () => console.log('✅ Test image loaded successfully');
-            testImg.onerror = () => console.error('❌ Test image failed to load - check CORS or URL');
-            testImg.src = testUrl;
-        }
+        // Test first image URL directly
+        const testUrl = GITHUB_BASE_URL + productsData[0].image.replace(/ /g, '%20');
+        console.log('\n=== Testing First Image URL ===');
+        console.log('Test URL:', testUrl);
+        
+        const testImg = new Image();
+        testImg.onload = () => {
+            console.log('✅ Test image loaded successfully!');
+            console.log('Test image dimensions:', testImg.naturalWidth, 'x', testImg.naturalHeight);
+        };
+        testImg.onerror = () => {
+            console.error('❌ Test image failed to load!');
+            console.error('This might be a CORS issue or the URL is incorrect.');
+        };
+        testImg.src = testUrl;
+
+        // Render products
+        renderProducts();
     </script>
 </body>
 </html>
-
