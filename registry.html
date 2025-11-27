@@ -670,7 +670,19 @@
         };
 
         // Initialize
+        console.log('Initializing registry with', productsData.length, 'products');
+        console.log('GitHub base URL:', GITHUB_BASE_URL);
         renderProducts();
+        
+        // Test first image URL
+        if (productsData.length > 0) {
+            const testUrl = GITHUB_BASE_URL + productsData[0].image.replace(/ /g, '%20');
+            console.log('Test image URL:', testUrl);
+            const testImg = new Image();
+            testImg.onload = () => console.log('✅ Test image loaded successfully');
+            testImg.onerror = () => console.error('❌ Test image failed to load - check CORS or URL');
+            testImg.src = testUrl;
+        }
     </script>
 </body>
 </html>
