@@ -509,6 +509,7 @@
         ];
 
         // GitHub repository base URL for images
+        // Note: GitHub raw URLs work best with %20 for spaces, not full encoding
         const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/sapiensenpai/photobank/main/';
 
         let currentProductIndex = null;
@@ -556,23 +557,34 @@
                 };
 
                 const img = document.createElement('img');
-                // GitHub raw URLs - encode the filename properly
-                const imageUrl = GITHUB_BASE_URL + encodeURIComponent(product.image);
+                // GitHub raw URLs - handle spaces by replacing with %20
+                // encodeURIComponent would encode too much (like colons, dots, etc.)
+                let imageUrl = GITHUB_BASE_URL + product.image.replace(/ /g, '%20');
                 img.src = imageUrl;
                 img.alt = product.caption;
                 img.loading = 'lazy';
+                img.style.display = 'block';
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'cover';
+                img.crossOrigin = 'anonymous'; // Allow CORS if needed
                 img.onerror = function() {
                     console.error('Failed to load image:', imageUrl);
-                    // Create a placeholder div if image fails
-                    const placeholder = document.createElement('div');
-                    placeholder.style.width = '100%';
-                    placeholder.style.height = '100%';
-                    placeholder.style.backgroundColor = '#f0f0f0';
-                    placeholder.style.display = 'flex';
-                    placeholder.style.alignItems = 'center';
-                    placeholder.style.justifyContent = 'center';
-                    placeholder.innerHTML = '<span style="color: #999; font-size: 0.8rem;">Image not found</span>';
-                    this.parentNode.replaceChild(placeholder, this);
+                    console.error('Original filename:', product.image);
+                    // Create error placeholder
+                    const errorDiv = document.createElement('div');
+                    errorDiv.style.width = '100%';
+                    errorDiv.style.height = '100%';
+                    errorDiv.style.backgroundColor = '#f0f0f0';
+                    errorDiv.style.display = 'flex';
+                    errorDiv.style.alignItems = 'center';
+                    errorDiv.style.justifyContent = 'center';
+                    errorDiv.style.flexDirection = 'column';
+                    errorDiv.innerHTML = '<span style="color: #999; font-size: 0.7rem; padding: 10px; text-align: center;">Image not found</span>';
+                    this.parentNode.replaceChild(errorDiv, this);
+                };
+                img.onload = function() {
+                    console.log('✓ Image loaded:', product.image);
                 };
 
                 link.appendChild(img);

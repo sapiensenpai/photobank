@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Test</title>
+</head>
+<body>
+    <h1>Testing Image URLs</h1>
+    <div>
+        <h2>Test 1: Simple filename</h2>
+        <img src="https://raw.githubusercontent.com/sapiensenpai/photobank/main/blue-mini-griddle-pan.webp" alt="test1" style="width:200px;">
+        <p>URL: https://raw.githubusercontent.com/sapiensenpai/photobank/main/blue-mini-griddle-pan.webp</p>
+    </div>
+    <div>
+        <h2>Test 2: Filename with spaces (encoded)</h2>
+        <img src="https://raw.githubusercontent.com/sapiensenpai/photobank/main/Screenshot%202025-10-30%20at%2013.49.35.png" alt="test2" style="width:200px;">
+        <p>URL: https://raw.githubusercontent.com/sapiensenpai/photobank/main/Screenshot%202025-10-30%20at%2013.49.35.png</p>
+    </div>
+    <div>
+        <h2>Test 3: Using encodeURIComponent</h2>
+        <script>
+            const filename = "Screenshot 2025-10-30 at 13.49.35.png";
+            const encoded = encodeURIComponent(filename);
+            document.write('<img src="https://raw.githubusercontent.com/sapiensenpai/photobank/main/' + encoded + '" alt="test3" style="width:200px;">');
+            document.write('<p>URL: https://raw.githubusercontent.com/sapiensenpai/photobank/main/' + encoded + '</p>');
+        </script>
+    </div>
+</body>
+</html>
+
