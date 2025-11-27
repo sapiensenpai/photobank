@@ -563,16 +563,21 @@
                 // encodeURIComponent would encode too much (like colons, dots, etc.)
                 let imageUrl = GITHUB_BASE_URL + product.image.replace(/ /g, '%20');
                 
-                // Remove crossOrigin - GitHub raw URLs don't need it and it can cause CORS issues
+                console.log('Creating image for:', product.image, 'URL:', imageUrl);
+                
+                // Set src first, then styles
                 img.src = imageUrl;
                 img.alt = product.caption;
-                img.loading = 'lazy';
+                img.loading = 'eager'; // Load immediately
+                
+                // Style for contain (fit) instead of cover (fill)
                 img.style.display = 'block';
                 img.style.maxWidth = '100%';
                 img.style.maxHeight = '100%';
                 img.style.width = 'auto';
                 img.style.height = 'auto';
                 img.style.objectFit = 'contain';
+                img.style.objectPosition = 'center';
                 img.style.backgroundColor = 'transparent';
                 
                 img.onerror = function() {
@@ -593,8 +598,7 @@
                     this.style.backgroundColor = 'transparent';
                 };
                 
-                // Force image to load immediately (remove lazy loading for debugging)
-                img.loading = 'eager';
+                // Image is set to eager loading above
 
                 link.appendChild(img);
                 wrapper.appendChild(link);
