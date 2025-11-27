@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wedding Registry A</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #fafafa;
+            padding: 2vw;
+            min-height: 100vh;
+        }
+
+        .registry-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .gallery-grid-wrapper {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-column-gap: 1.55vw;
+            grid-row-gap: 1.55vw;
+            width: 100%;
+            margin-bottom: 2vw;
+        }
+
+        @media (max-width: 768px) {
+            .gallery-grid-wrapper {
+                grid-template-columns: repeat(2, 1fr);
+                grid-column-gap: 2vw;
+                grid-row-gap: 2vw;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .gallery-grid-wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .gallery-grid-item {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            overflow: visible;
+        }
+
+        .gallery-grid-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .gallery-grid-item-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            overflow: hidden;
+            background: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gallery-grid-image-link {
+            display: block;
+            width: 100%;
+            height: 100%;
+            text-decoration: none;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gallery-grid-image-link.disabled {
+            pointer-events: none;
+        }
+
+        .gallery-grid-item img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            object-position: center;
+            display: block;
+            transition: opacity 0.3s ease;
+        }
+
+        .gallery-grid-item.purchased img {
+            opacity: 0.5;
+        }
+
+        /* Red overlay for purchased items */
+        .purchased-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(220, 38, 38, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .gallery-grid-item.purchased:hover .purchased-overlay {
+            display: flex;
+        }
+
+        .purchased-bar {
+            width: 80%;
+            height: 4px;
+            background: #fff;
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .purchased-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .gallery-caption {
+            padding: 1.2vw 0.8vw;
+            background: #fff;
+            border-radius: 0 0 8px 8px;
+            flex-shrink: 0;
+            min-height: 3.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .gallery-caption-content {
+            font-size: 0.95rem;
+            color: #333;
+            line-height: 1.5;
+            text-align: center;
+            margin: 0;
+            width: 100%;
+            font-weight: 500;
+        }
+
+        /* Modal for confirmation */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 1rem;
+            color: #333;
+            font-size: 1.3rem;
+        }
+
+        .modal-content p {
+            margin-bottom: 2rem;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .modal-button {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-button.yes {
+            background: #dc2626;
+            color: #fff;
+        }
+
+        .modal-button.yes:hover {
+            background: #b91c1c;
+        }
+
+        .modal-button.no {
+            background: #e5e7eb;
+            color: #333;
+        }
+
+        .modal-button.no:hover {
+            background: #d1d5db;
+        }
+    </style>
+</head>
+<body>
+    <div class="registry-container">
+        <div class="gallery-grid-wrapper" id="galleryGrid"></div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmationModal">
+        <div class="modal-content">
+            <h3>Product Already Purchased</h3>
+            <p>Product already purchased. Are you sure you want to make the product purchasable again?</p>
+            <div class="modal-buttons">
+                <button class="modal-button yes" id="confirmYes">Yes</button>
+                <button class="modal-button no" id="confirmNo">No</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Product data - all 40 products
+        const productsData = [
+            {
+                "image": "1113501_428a8d3c-d73e-4d48-bf0f-aa0f74119fce_400x.webp",
+                "link": "https://www.divertimenti.co.uk/collections/dinnerware/products/costa-nova-riviera-plate-27cm",
+                "caption": "Set of 8 Costa Nova Riviera Plate - Azure 27cm- £140",
+                "purchased": false
+            },
+            {
+                "image": "1113501_154f10a2-f1e7-473b-b9d8-64dc1d38181d_600x.webp",
+                "link": "https://www.divertimenti.co.uk/collections/dinnerware/products/costa-nova-riviera-plate-21cm",
+                "caption": "Set of 8 Costa Nova Riviera Plate - Azure 21cm - £120",
+                "purchased": false
+            },
+            {
+                "image": "1113532_400x.webp",
+                "link": "https://www.divertimenti.co.uk/collections/dinnerware/products/riviera-pasta-soup-plate",
+                "caption": "Set of 8 Costa Nova Riviera Pasta - Soup Plate - Azure 25cm- £132",
+                "purchased": false
+            },
+            {
+                "image": "89012.webp",
+                "link": "https://www.nordichouse.co.uk/blossom-pink-cereal-bowl",
+                "caption": "set of 4 Blossom Pink Cereal Bowl - £40",
+                "purchased": false
+            },
+            {
+                "image": "Screenshot 2025-10-30 at 13.49.35.png",
+                "link": "https://www.johnlewis.com/jamie-oliver-big-love-stoneware-proper-pie-dish-28cm-pink/p112697781",
+                "caption": "Jamie Oliver Big Love Stoneware Proper Pie Dish, 28cm, Pink - £30",
+                "purchased": false
+            },
+            {
+                "image": "gpLRQ1RnOi3vYNlMWsAn_DSC_7055_1500x_4d116380-ff4c-4e45-8a43-db4a84e50938_1000x.webp",
+                "link": "https://www.divertimenti.co.uk/collections/dinnerware/products/wonki-ware-large-salad-bowl-grey",
+                "caption": "1 Wonki Ware Large Salad Bowl - Grey
+£129",
+                "purchased": false
+            },
+            {
+                "image": "JarsMagueloneTumbler-OrageUni_1200x.webp",
+                "link": "https://www.divertimenti.co.uk/collections/dinnerware/products/jars-maguelone-tumbler-orage-uni",
+                "caption": "Set of 8 Jars Maguelone Tumbler - Orage Uni - £120",
+                "purchased": false
+            },
+            {
+                "image": "57383.webp",
+                "link": "https://www.nordichouse.co.uk/wheat-ceramic-bread-box",
+                "caption": "Wheat Ceramic Bread Box - £59",
+                "purchased": false
+            },
+            {
+                "image": "70008.webp",
+                "link": "https://www.nordichouse.co.uk/stoneware-milk-and-sugar-set",
+                "caption": "Stoneware Milk and Sugar Set - £22.50",
+                "purchased": false
+            },
+            {
+                "image": "A13526_AU24_2_F.webp",
+                "link": "https://www.thewhitecompany.com/uk/Pimlico-White-Wine-Glasses--Set-of-4/p/A13526?swatch=Clear",
+                "caption": "Pimlico White Wine Glasses – Set of 4 - £34.00",
+                "purchased": false
+            }
+        ];
+
+        const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/sapiensenpai/photobank/main/';
+
+        let currentProductIndex = null;
+        const modal = document.getElementById('confirmationModal');
+        const confirmYes = document.getElementById('confirmYes');
+        const confirmNo = document.getElementById('confirmNo');
+
+        // Load products from localStorage if available
+        function loadProducts() {
+            const saved = localStorage.getItem('registryProductsA');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+            return productsData;
+        }
+
+        // Save products to localStorage
+        function saveProducts(products) {
+            localStorage.setItem('registryProductsA', JSON.stringify(products));
+        }
+
+        // Render products
+        function renderProducts() {
+            const products = loadProducts();
+            const galleryGrid = document.getElementById('galleryGrid');
+            galleryGrid.innerHTML = '';
+
+            products.forEach((product, index) => {
+                const figure = document.createElement('figure');
+                figure.className = `gallery-grid-item ${product.purchased ? 'purchased' : ''}`;
+                figure.dataset.index = index;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'gallery-grid-item-wrapper';
+
+                const link = document.createElement('a');
+                link.href = product.purchased ? '#' : product.link;
+                link.className = `gallery-grid-image-link ${product.purchased ? 'disabled' : ''}`;
+                link.target = '_blank';
+                link.rel = 'noopener';
+                link.onclick = (e) => {
+                    if (product.purchased) {
+                        e.preventDefault();
+                    }
+                };
+
+                const img = document.createElement('img');
+                let imageUrl = GITHUB_BASE_URL + product.image.replace(/ /g, '%20');
+                
+                img.src = imageUrl;
+                img.alt = product.caption;
+                img.loading = 'eager';
+                
+                img.style.display = 'block';
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '100%';
+                img.style.width = 'auto';
+                img.style.height = 'auto';
+                img.style.objectFit = 'contain';
+                img.style.objectPosition = 'center';
+                
+                img.onerror = function() {
+                    console.error('❌ Failed to load image:', imageUrl);
+                    console.error('Original filename:', product.image);
+                };
+                
+                img.onload = function() {
+                    console.log('✓ Image loaded:', product.image);
+                };
+
+                link.appendChild(img);
+                wrapper.appendChild(link);
+
+                // Add purchased overlay
+                if (product.purchased) {
+                    const overlay = document.createElement('div');
+                    overlay.className = 'purchased-overlay';
+                    overlay.innerHTML = `
+                        <div class="purchased-text">Purchased</div>
+                        <div class="purchased-bar"></div>
+                    `;
+                    wrapper.appendChild(overlay);
+                }
+
+                figure.appendChild(wrapper);
+
+                const caption = document.createElement('figcaption');
+                caption.className = 'gallery-caption';
+                const captionContent = document.createElement('p');
+                captionContent.className = 'gallery-caption-content';
+                captionContent.textContent = product.caption;
+                caption.appendChild(captionContent);
+                figure.appendChild(caption);
+
+                // Add click handler for all items
+                figure.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (product.purchased) {
+                        handleProductClick(index);
+                    } else {
+                        if (confirm(`Mark "${product.caption}" as purchased?`)) {
+                            togglePurchaseStatus(index);
+                        }
+                    }
+                };
+
+                galleryGrid.appendChild(figure);
+            });
+        }
+
+        // Handle product click
+        function handleProductClick(index) {
+            currentProductIndex = index;
+            modal.classList.add('active');
+        }
+
+        // Toggle purchase status
+        function togglePurchaseStatus(index) {
+            const products = loadProducts();
+            products[index].purchased = !products[index].purchased;
+            saveProducts(products);
+            renderProducts();
+        }
+
+        // Modal button handlers
+        confirmYes.onclick = () => {
+            if (currentProductIndex !== null) {
+                togglePurchaseStatus(currentProductIndex);
+                modal.classList.remove('active');
+                currentProductIndex = null;
+            }
+        };
+
+        confirmNo.onclick = () => {
+            modal.classList.remove('active');
+            currentProductIndex = null;
+        };
+
+        // Close modal on background click
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                currentProductIndex = null;
+            }
+        };
+
+        // Initialize
+        renderProducts();
+    </script>
+</body>
+</html>
