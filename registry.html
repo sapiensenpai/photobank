@@ -348,35 +348,121 @@
 
         const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/sapiensenpai/photobank/main/';
 
+        // Load/save purchase status from localStorage
+        function loadPurchaseStatus() {
+            const saved = localStorage.getItem('registryPurchases');
+            return saved ? JSON.parse(saved) : {};
+        }
+
+        function savePurchaseStatus(status) {
+            localStorage.setItem('registryPurchases', JSON.stringify(status));
+        }
+
+        function togglePurchaseStatus(index) {
+            const status = loadPurchaseStatus();
+            status[index] = !status[index];
+            savePurchaseStatus(status);
+            renderProducts();
+        }
+
+        // Create confirmation modal
+        function createModal() {
+            const modal = document.createElement('div');
+            modal.id = 'confirmationModal';
+            modal.style.cssText = 'display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;';
+            
+            const content = document.createElement('div');
+            content.style.cssText = 'background:#fff;padding:2.5rem;border-radius:12px;max-width:500px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,0.2);text-align:center;';
+            
+            const h3 = document.createElement('h3');
+            h3.textContent = 'Product Already Purchased';
+            h3.style.cssText = 'margin-bottom:1rem;color:#333;font-size:1.3rem;';
+            
+            const p = document.createElement('p');
+            p.textContent = 'Product already purchased. Are you sure you want to make the product purchasable again?';
+            p.style.cssText = 'margin-bottom:2rem;color:#666;line-height:1.6;';
+            
+            const buttons = document.createElement('div');
+            buttons.style.cssText = 'display:flex;gap:1rem;justify-content:center;';
+            
+            const yesBtn = document.createElement('button');
+            yesBtn.textContent = 'Yes';
+            yesBtn.style.cssText = 'padding:0.75rem 2rem;border:none;border-radius:6px;font-size:1rem;font-weight:600;cursor:pointer;background:#dc2626;color:#fff;';
+            yesBtn.onmouseover = () => yesBtn.style.background = '#b91c1c';
+            yesBtn.onmouseout = () => yesBtn.style.background = '#dc2626';
+            
+            const noBtn = document.createElement('button');
+            noBtn.textContent = 'No';
+            noBtn.style.cssText = 'padding:0.75rem 2rem;border:none;border-radius:6px;font-size:1rem;font-weight:600;cursor:pointer;background:#e5e7eb;color:#333;';
+            noBtn.onmouseover = () => noBtn.style.background = '#d1d5db';
+            noBtn.onmouseout = () => noBtn.style.background = '#e5e7eb';
+            
+            buttons.appendChild(yesBtn);
+            buttons.appendChild(noBtn);
+            content.appendChild(h3);
+            content.appendChild(p);
+            content.appendChild(buttons);
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            return { modal, yesBtn, noBtn };
+        }
+
+        const { modal, yesBtn, noBtn } = createModal();
+        let currentProductIndex = null;
+
+        yesBtn.onclick = () => {
+            if (currentProductIndex !== null) {
+                togglePurchaseStatus(currentProductIndex);
+                modal.style.display = 'none';
+                currentProductIndex = null;
+            }
+        };
+
+        noBtn.onclick = () => {
+            modal.style.display = 'none';
+            currentProductIndex = null;
+        };
+
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                currentProductIndex = null;
+            }
+        };
+
         function renderProducts() {
             const galleryGrid = document.getElementById('galleryGrid');
             galleryGrid.innerHTML = '';
+            const purchaseStatus = loadPurchaseStatus();
 
             productsData.forEach((product, index) => {
-                console.log(`\n=== Product ${index + 1} ===`);
-                console.log('Image filename:', product.image);
+                const isPurchased = purchaseStatus[index] || false;
                 
                 const figure = document.createElement('figure');
                 figure.className = 'gallery-grid-item';
+                if (isPurchased) {
+                    figure.style.opacity = '0.7';
+                }
 
                 const wrapper = document.createElement('div');
                 wrapper.className = 'gallery-grid-item-wrapper';
+                wrapper.style.position = 'relative';
 
                 const link = document.createElement('a');
-                link.href = product.link;
+                link.href = isPurchased ? '#' : product.link;
                 link.className = 'gallery-grid-image-link';
                 link.target = '_blank';
                 link.rel = 'noopener';
+                if (isPurchased) {
+                    link.onclick = (e) => e.preventDefault();
+                }
 
                 const img = document.createElement('img');
                 let imageUrl = GITHUB_BASE_URL + product.image.replace(/ /g, '%20');
-                
-                console.log('Full URL:', imageUrl);
-                
                 img.src = imageUrl;
                 img.alt = product.caption;
                 img.loading = 'eager';
-                
                 img.style.display = 'block';
                 img.style.maxWidth = '100%';
                 img.style.maxHeight = '100%';
@@ -384,21 +470,34 @@
                 img.style.height = 'auto';
                 img.style.objectFit = 'contain';
                 img.style.objectPosition = 'center';
-                
-                img.onload = function() {
-                    console.log('✅ Image loaded successfully:', product.image);
-                    console.log('Image dimensions:', this.naturalWidth, 'x', this.naturalHeight);
-                };
+                if (isPurchased) {
+                    img.style.opacity = '0.5';
+                }
                 
                 img.onerror = function() {
-                    console.error('❌ Image failed to load:', imageUrl);
-                    console.error('Product:', product.caption);
-                    this.style.backgroundColor = '#ffebee';
-                    this.style.display = 'flex';
-                    this.style.alignItems = 'center';
-                    this.style.justifyContent = 'center';
                     this.outerHTML = '<div style="width:100%;height:100%;background:#ffebee;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#c62828;font-size:0.8rem;padding:10px;text-align:center;">❌ Image failed<br><small>' + product.image + '</small></div>';
                 };
+
+                // Red overlay for purchased items (created with JavaScript)
+                if (isPurchased) {
+                    const overlay = document.createElement('div');
+                    overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(220,38,38,0.85);display:none;align-items:center;justify-content:center;z-index:10;border-radius:8px;';
+                    
+                    const overlayText = document.createElement('div');
+                    overlayText.textContent = 'Purchased';
+                    overlayText.style.cssText = 'color:#fff;font-weight:600;font-size:1.1rem;';
+                    
+                    const bar = document.createElement('div');
+                    bar.style.cssText = 'position:absolute;width:80%;height:4px;background:#fff;border-radius:2px;';
+                    
+                    overlay.appendChild(overlayText);
+                    overlay.appendChild(bar);
+                    
+                    wrapper.onmouseenter = () => overlay.style.display = 'flex';
+                    wrapper.onmouseleave = () => overlay.style.display = 'none';
+                    
+                    wrapper.appendChild(overlay);
+                }
 
                 link.appendChild(img);
                 wrapper.appendChild(link);
@@ -411,6 +510,20 @@
                 captionContent.textContent = product.caption;
                 caption.appendChild(captionContent);
                 figure.appendChild(caption);
+
+                // Click handler
+                figure.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (isPurchased) {
+                        currentProductIndex = index;
+                        modal.style.display = 'flex';
+                    } else {
+                        if (confirm(`Mark "${product.caption}" as purchased?`)) {
+                            togglePurchaseStatus(index);
+                        }
+                    }
+                };
 
                 galleryGrid.appendChild(figure);
             });
