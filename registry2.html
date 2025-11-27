@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registry Test - 3 Products</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #fafafa;
+            padding: 2vw;
+            min-height: 100vh;
+        }
+
+        .registry-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .gallery-grid-wrapper {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-column-gap: 1.55vw;
+            grid-row-gap: 1.55vw;
+            width: 100%;
+        }
+
+        .gallery-grid-item {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: visible;
+        }
+
+        .gallery-grid-item-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            overflow: hidden;
+            background: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gallery-grid-image-link {
+            display: block;
+            width: 100%;
+            height: 100%;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gallery-grid-item img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        .gallery-caption {
+            padding: 1.2vw 0.8vw;
+            background: #fff;
+            border-radius: 0 0 8px 8px;
+            flex-shrink: 0;
+            min-height: 3.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .gallery-caption-content {
+            font-size: 0.95rem;
+            color: #333;
+            line-height: 1.5;
+            text-align: center;
+            margin: 0;
+            width: 100%;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="registry-container">
+        <h1 style="text-align: center; margin-bottom: 2rem; color: #333;">Registry Test - 3 Products</h1>
+        <div class="gallery-grid-wrapper" id="galleryGrid"></div>
+    </div>
+
+    <script>
+        // Test with only 3 products
+        const productsData = [
+            {
+                "image": "1113501_428a8d3c-d73e-4d48-bf0f-aa0f74119fce_400x.webp",
+                "link": "https://www.divertimenti.co.uk/collections/dinnerware/products/costa-nova-riviera-plate-27cm",
+                "caption": "Set of 8 Costa Nova Riviera Plate - Azure 27cm- £140",
+                "purchased": false
+            },
+            {
+                "image": "blue-mini-griddle-pan.webp",
+                "link": "https://fromourplace.co.uk/products/mini-griddle-pan?variant=43546191954097",
+                "caption": "Mini Griddle Pan - £55",
+                "purchased": false
+            },
+            {
+                "image": "Screenshot 2025-10-30 at 13.49.35.png",
+                "link": "https://www.johnlewis.com/jamie-oliver-big-love-stoneware-proper-pie-dish-28cm-pink/p112697781",
+                "caption": "Jamie Oliver Big Love Stoneware Proper Pie Dish, 28cm, Pink - £30",
+                "purchased": false
+            }
+        ];
+
+        const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/sapiensenpai/photobank/main/';
+
+        function renderProducts() {
+            const galleryGrid = document.getElementById('galleryGrid');
+            galleryGrid.innerHTML = '';
+
+            productsData.forEach((product, index) => {
+                console.log(`\n=== Product ${index + 1} ===`);
+                console.log('Image filename:', product.image);
+                
+                const figure = document.createElement('figure');
+                figure.className = 'gallery-grid-item';
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'gallery-grid-item-wrapper';
+
+                const link = document.createElement('a');
+                link.href = product.link;
+                link.className = 'gallery-grid-image-link';
+                link.target = '_blank';
+                link.rel = 'noopener';
+
+                const img = document.createElement('img');
+                let imageUrl = GITHUB_BASE_URL + product.image.replace(/ /g, '%20');
+                
+                console.log('Full URL:', imageUrl);
+                
+                img.src = imageUrl;
+                img.alt = product.caption;
+                img.loading = 'eager';
+                
+                img.style.display = 'block';
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '100%';
+                img.style.width = 'auto';
+                img.style.height = 'auto';
+                img.style.objectFit = 'contain';
+                img.style.objectPosition = 'center';
+                
+                img.onload = function() {
+                    console.log('✅ Image loaded successfully:', product.image);
+                    console.log('Image dimensions:', this.naturalWidth, 'x', this.naturalHeight);
+                };
+                
+                img.onerror = function() {
+                    console.error('❌ Image failed to load:', imageUrl);
+                    console.error('Product:', product.caption);
+                    this.style.backgroundColor = '#ffebee';
+                    this.style.display = 'flex';
+                    this.style.alignItems = 'center';
+                    this.style.justifyContent = 'center';
+                    this.outerHTML = '<div style="width:100%;height:100%;background:#ffebee;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#c62828;font-size:0.8rem;padding:10px;text-align:center;">❌ Image failed<br><small>' + product.image + '</small></div>';
+                };
+
+                link.appendChild(img);
+                wrapper.appendChild(link);
+                figure.appendChild(wrapper);
+
+                const caption = document.createElement('figcaption');
+                caption.className = 'gallery-caption';
+                const captionContent = document.createElement('p');
+                captionContent.className = 'gallery-caption-content';
+                captionContent.textContent = product.caption;
+                caption.appendChild(captionContent);
+                figure.appendChild(caption);
+
+                galleryGrid.appendChild(figure);
+            });
+        }
+
+        console.log('=== Starting Registry Test ===');
+        console.log('GitHub Base URL:', GITHUB_BASE_URL);
+        console.log('Number of products:', productsData.length);
+        
+        // Test first image URL directly
+        const testUrl = GITHUB_BASE_URL + productsData[0].image.replace(/ /g, '%20');
+        console.log('\n=== Testing First Image URL ===');
+        console.log('Test URL:', testUrl);
+        
+        const testImg = new Image();
+        testImg.onload = () => {
+            console.log('✅ Test image loaded successfully!');
+            console.log('Test image dimensions:', testImg.naturalWidth, 'x', testImg.naturalHeight);
+        };
+        testImg.onerror = () => {
+            console.error('❌ Test image failed to load!');
+            console.error('This might be a CORS issue or the URL is incorrect.');
+        };
+        testImg.src = testUrl;
+
+        // Render products
+        renderProducts();
+    </script>
+</body>
+</html>
+
